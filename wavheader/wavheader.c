@@ -33,13 +33,17 @@ int parseHeader ( char * FileName, WAVHEADER * Header ) {
 	TwoBytes = ( char * )( malloc( sizeof( char ) * 2 ) );
 	FourBytes = ( char * )( malloc( sizeof( char ) * 4 ) );
 	FILE * AudioPhile = fopen( FileName, "r+" );
-	//FILE * LogFile = fopen( "log.hex", "w+" );
-
+	FILE * LogFile = fopen( "log.hex", "w+" );//this always has to be opened and closed cause for some reason
+											  //having it in an if that branches the same as any other function
+											  //using the ptr means that its undefined for compiling
+											  //Static typing is a pain sometimes.
 	int i, Chunk2Size;
 	Buffer = ( char * )( malloc( sizeof( char ) * 18 ) );
 	fgets( Buffer, 19, AudioPhile );
 
-	//fputs( Buffer, LogFile );
+	if( DEBUG ) {
+		fwrite( ( const void * )Buffer, 1, 18, LogFile );
+	}
 
 	/*RIFF header*/
 	for( i = 0; i < 4; i++ ) {
@@ -79,7 +83,9 @@ int parseHeader ( char * FileName, WAVHEADER * Header ) {
 	Buffer = ( char * )( malloc( sizeof( char ) * Chunk2Size ) );
 	fgets( Buffer, ( Chunk2Size + 1 ), AudioPhile );
 
-	//fputs( Buffer, LogFile );
+	if( DEBUG ) {
+		fwrite( ( const void * )Buffer, 1, Chunk2Size, LogFile );
+	}
 
 	for( i = 0; i < 2; i++ ) {
 		TwoBytes[ i ] = Buffer[ i ];
@@ -119,29 +125,29 @@ int parseHeader ( char * FileName, WAVHEADER * Header ) {
 	free( Buffer );
 	free( TwoBytes );
 	free( FourBytes );
-	//fclose( LogFile );
+	fclose( LogFile );
 	fclose( AudioPhile );
 	return ( 0 );
 }
 
-int getWAVHeader ( char * FileName, WAVHEADER * Header, int ErrorOut ) {
+int getWAVHeader ( char * FileName, WAVHEADER * Header ) {
 /*int main ( int argc, char ** argv ) {   This code for testing purposes 
 	WAVHEADER * Header = ( WAVHEADER * )( malloc( sizeof( WAVHEADER ) ) );
 	char * FileName = "440.wav";
 	int ErrorOut = 1;*/
 	switch( parseHeader( FileName, Header ) ) {
 		case 3:
-			if( ErrorOut ) {
+			if( DEBUG ) {
 				fputs( "Corrupted File: Unable to Read", stderr );
 			}
 			return ( 3 );
 		case 2:
-			if( ErrorOut ) {
+			if( DEBUG ) {
 				fputs( "Invalid file Type: Not a Wave File", stderr );
 			}
 			return ( 2 );
 		case 1:
-			if( ErrorOut ) {
+			if( DEBUG ) {
 				fputs( "Invalid File Type: Not a RIFF or RIFX File", stderr );
 			}
 			return ( 1 );

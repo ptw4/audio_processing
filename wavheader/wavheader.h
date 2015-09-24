@@ -10,6 +10,8 @@
 #ifndef _WAVHEADER_H
 #define _WAVHEADER_H 1
 
+#define DEBUG 1
+
 typedef struct _WAVHEADER {
 	/*RIFF header*/
 	char     ChunkID[ 4 ];     //should be "RIFF"
